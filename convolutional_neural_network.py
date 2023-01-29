@@ -1,24 +1,6 @@
 import numpy as np
+
 import datahandler
-
-
-def sigmoid(Z):
-    return 1 / (1 + np.exp(-Z))
-
-
-def relu(Z):
-    return np.maximum(0, Z)
-
-
-def sigmoid_backward(x):
-    sig = sigmoid(x)
-    return sig * (1 - sig)
-
-
-def relu_backward(x):
-    x[x <= 0] = 0
-    x[x > 0] = 1
-    return x
 
 
 def init_layer(n_in, n_out) -> tuple[np.ndarray, np.ndarray]:
@@ -70,14 +52,50 @@ class Dense:
 
 class ReLU:
     def __init__(self) -> None:
-        pass
+        self.x = None
+
+    @staticmethod
+    def relu(Z):
+        return np.maximum(0, Z)
+
+    @staticmethod
+    def relu_backward(x):
+        x[x <= 0] = 0
+        x[x > 0] = 1
+        return x
 
     def forward(self, x):
         self.x = x
-        return relu(x)
+        return self.relu(x)
 
     def backward(self, dE_dY):
-        dX = np.multiply(dE_dY, relu_backward(self.x))
+        dX = np.multiply(dE_dY, self.relu_backward(self.x))
+        return 0, 0, dX
+
+    def update(self, dW, dB, learning_rate):
+        pass
+
+
+class Sigmoid:
+    def __init__(self):
+        self.x = None
+        pass
+
+    @staticmethod
+    def sigmoid(Z):
+        return 1 / (1 + np.exp(-Z))
+
+    @staticmethod
+    def sigmoid_backward(x):
+        sig = Sigmoid.sigmoid(x)
+        return sig * (1 - sig)
+
+    def forward(self, x):
+        self.x = x
+        return self.sigmoid(x)
+
+    def backward(self, dE_dY):
+        dX = np.multiply(dE_dY, self.sigmoid_backward(self.x))
         return 0, 0, dX
 
     def update(self, dW, dB, learning_rate):
@@ -130,13 +148,13 @@ def main():
     network = Network(
         [
             Dense(784, 64),
-            # ReLU(),
+            ReLU(),
             Dense(64, 32),
-            # ReLU(),
+            ReLU(),
             Dense(32, 16),
-            # ReLU(),
+            ReLU(),
             Dense(16, 10),
-            # ReLU(),
+            Sigmoid(),
         ]
     )
 
