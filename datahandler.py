@@ -1,11 +1,11 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.datasets import fetch_openml
-from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from joblib import Memory
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
 
-def get_mnist(batch_size=64, random_seed=42):
+def get_mnist(batch_size=64, random_seed=42, reshaped=False):
     def split_into_batches(x, batch_size):
         n_batches = len(x) / batch_size
         x = np.array_split(x, n_batches)
@@ -36,6 +36,24 @@ def get_mnist(batch_size=64, random_seed=42):
     X_test = split_into_batches(
         min_max_scaler.fit_transform(np.array(X_test)), batch_size
     )
+
+    X_train_new = []
+    X_test_new = []
+    if reshaped:
+        for i in range(len(X_train)):
+            if batch_size == 1:
+                X_train_new.append(X_train[i].reshape(1, 28, 28))
+            else:
+                X_train[i] = X_train[i].reshape(-1, 1, 28, 28)
+        if batch_size == 1:
+            X_train = np.array(X_train_new)
+        for i in range(len(X_test)):
+            if batch_size == 1:
+                X_test_new.append(X_test[i].reshape(1, 28, 28))
+            else:
+                X_test[i] = X_test[i].reshape(-1, 1, 28, 28)
+        if batch_size == 1:
+            X_test = np.array(X_test_new)
 
     # Turn the targets into Numpy arrays and flatten the array
     y_train = np.array(y_train).reshape(-1, 1)
